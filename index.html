@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Signature Generator</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --radius: 10px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header .logo {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: 18px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header p  { font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
+
+    /* ── Layout ───────────────────────────────────── */
+    .app {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 0;
+      height: calc(100vh - 69px);
+    }
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; height: auto; }
+    }
+
+    /* ── Sidebar ──────────────────────────────────── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* Form fields */
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+    .field input {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.875rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+    .field input::placeholder { color: #94a3b8; }
+
+    /* Template selector */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .template-btn {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 6px;
+      cursor: pointer;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .template-btn:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, white); }
+    .template-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, white); }
+    .template-btn span { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+    .template-btn.active span { color: var(--accent); }
+    .tmpl-icon { width: 52px; height: 36px; border-radius: 4px; overflow: hidden; }
+
+    /* Design controls */
+    .design-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .design-control { display: flex; flex-direction: column; gap: 5px; }
+    .design-control label { font-size: 0.8rem; font-weight: 500; }
+    .design-control select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: white;
+      outline: none;
+      cursor: pointer;
+    }
+    .design-control select:focus { border-color: var(--accent); }
+
+    .color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .color-swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: border-color 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .color-swatch:hover { transform: scale(1.1); }
+    .color-swatch.active { border-color: #0f172a; }
+    .color-custom {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      overflow: hidden;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .color-custom input[type="color"] {
+      width: 48px; height: 48px;
+      border: none; padding: 0;
+      margin: -10px 0 0 -10px;
+      cursor: pointer;
+      opacity: 0;
+      position: absolute;
+    }
+    .color-custom { position: relative; }
+    .color-custom-icon {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; pointer-events: none;
+    }
+
+    /* ── Main / Preview ───────────────────────────── */
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .preview-header {
+      padding: 16px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .preview-header h2 { font-size: 0.95rem; font-weight: 600; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-success { background: #16a34a; color: white; }
+
+    .preview-canvas {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px;
+      background: #e2e8f0;
+    }
+
+    .email-mock {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      max-width: 680px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .email-mock-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .email-mock-header p { font-size: 0.78rem; color: var(--muted); margin-bottom: 2px; }
+    .email-mock-header .subject { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .email-body {
+      padding: 24px 28px;
+      font-size: 0.9rem;
+      color: #374151;
+      line-height: 1.6;
+    }
+    .email-body p { margin-bottom: 14px; }
+    .email-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0 28px 20px;
+    }
+    .signature-wrapper { padding: 0 28px 28px; }
+
+    /* ── Copy section ─────────────────────────────── */
+    .copy-section {
+      padding: 16px 24px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .copy-section p { font-size: 0.8rem; color: var(--muted); flex: 1; min-width: 180px; }
+
+    /* ── Instructions ─────────────────────────────── */
+    .instructions {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+    }
+    .instructions h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .steps { display: flex; flex-direction: column; gap: 8px; }
+    .step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .step-num {
+      width: 22px; height: 22px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Signature Templates ──────────────────────── */
+    /* These styles are injected into the generated HTML so they work in email clients */
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">S</div>
+  <div>
+    <h1>Email Signature Generator</h1>
+    <p>Build a professional signature in seconds</p>
+  </div>
+</header>
+
+<div class="app">
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+
+    <!-- Contact Info -->
+    <section>
+      <p class="section-label">Contact Information</p>
+      <div class="field"><label>Full Name</label><input id="f-name" type="text" placeholder="Jane Smith" /></div>
+      <div class="field"><label>Job Title</label><input id="f-title" type="text" placeholder="Senior Product Designer" /></div>
+      <div class="field"><label>Company</label><input id="f-company" type="text" placeholder="Acme Corp" /></div>
+      <div class="field"><label>Email Address</label><input id="f-email" type="email" placeholder="jane@acme.com" /></div>
+      <div class="field"><label>Phone Number</label><input id="f-phone" type="text" placeholder="+1 (555) 000-1234" /></div>
+      <div class="field"><label>Website</label><input id="f-website" type="text" placeholder="https://acme.com" /></div>
+    </section>
+
+    <!-- Social Links -->
+    <section>
+      <p class="section-label">Social Links</p>
+      <div class="field"><label>LinkedIn URL</label><input id="f-linkedin" type="text" placeholder="https://linkedin.com/in/janesmith" /></div>
+      <div class="field"><label>Twitter / X URL</label><input id="f-twitter" type="text" placeholder="https://twitter.com/janesmith" /></div>
+      <div class="field"><label>GitHub URL</label><input id="f-github" type="text" placeholder="https://github.com/janesmith" /></div>
+    </section>
+
+    <!-- Template -->
+    <section>
+      <p class="section-label">Template</p>
+      <div class="template-grid">
+        <button class="template-btn active" data-template="minimal">
+          <div class="tmpl-icon" id="tmpl-minimal-icon"></div>
+          <span>Minimal</span>
+        </button>
+        <button class="template-btn" data-template="professional">
+          <div class="tmpl-icon" id="tmpl-professional-icon"></div>
+          <span>Professional</span>
+        </button>
+        <button class="template-btn" data-template="modern">
+          <div class="tmpl-icon" id="tmpl-modern-icon"></div>
+          <span>Modern</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Design -->
+    <section>
+      <p class="section-label">Design</p>
+      <div class="design-row" style="margin-bottom: 12px;">
+        <div class="design-control">
+          <label>Font</label>
+          <select id="f-font">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+            <option value="'Trebuchet MS', Tahoma, sans-serif">Trebuchet</option>
+          </select>
+        </div>
+        <div class="design-control">
+          <label>Size</label>
+          <select id="f-size">
+            <option value="13">Small</option>
+            <option value="14" selected>Medium</option>
+            <option value="15">Large</option>
+          </select>
+        </div>
+      </div>
+      <label style="font-size:0.8rem; font-weight:500; display:block; margin-bottom:6px;">Accent Color</label>
+      <div class="color-row" id="color-swatches">
+        <div class="color-swatch active" data-color="#2563eb" style="background:#2563eb;" title="Blue"></div>
+        <div class="color-swatch" data-color="#7c3aed" style="background:#7c3aed;" title="Purple"></div>
+        <div class="color-swatch" data-color="#059669" style="background:#059669;" title="Green"></div>
+        <div class="color-swatch" data-color="#dc2626" style="background:#dc2626;" title="Red"></div>
+        <div class="color-swatch" data-color="#d97706" style="background:#d97706;" title="Amber"></div>
+        <div class="color-swatch" data-color="#0891b2" style="background:#0891b2;" title="Cyan"></div>
+        <div class="color-swatch" data-color="#374151" style="background:#374151;" title="Dark"></div>
+        <div class="color-custom" title="Custom color">
+          <div class="color-custom-icon">+</div>
+          <input type="color" id="custom-color" value="#2563eb" />
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <div class="preview-header">
+      <h2>Live Preview</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" id="btn-copy-html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy HTML
+        </button>
+        <button class="btn btn-primary" id="btn-copy-sig">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          Copy Signature
+        </button>
+      </div>
+    </div>
+
+    <div class="preview-canvas">
+      <div class="email-mock">
+        <div class="email-mock-header">
+          <p>From: Jane Smith &lt;jane@acme.com&gt; &nbsp;·&nbsp; To: team@company.com</p>
+          <div class="subject">Re: Project Update — Q2 Roadmap</div>
+        </div>
+        <div class="email-body">
+          <p>Hi everyone,</p>
+          <p>Thanks for joining the call earlier. I've attached the updated roadmap for your review. Let me know if you have any questions before the deadline.</p>
+          <p>Best,</p>
+        </div>
+        <hr class="email-divider" />
+        <div class="signature-wrapper" id="preview-signature">
+          <!-- Rendered live here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="copy-section">
+      <p id="copy-hint">Click "Copy Signature" to copy the rich-text signature, or "Copy HTML" for the raw HTML code.</p>
+      <div id="copy-feedback" style="display:none;color:#16a34a;font-size:0.82rem;font-weight:600;">Copied to clipboard!</div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>How to Add Your Signature</h3>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="gmail">Gmail</button>
+        <button class="tab-btn" data-tab="outlook">Outlook</button>
+        <button class="tab-btn" data-tab="apple">Apple Mail</button>
+      </div>
+      <div id="tab-gmail" class="tab-content active">
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy Signature"</strong> above.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Open <strong>Gmail</strong> → Settings gear → <strong>See all settings</strong>.</div></div>
+          <div class="step"><div class="step-num">3</div><div>Scroll to <strong>Signature</strong> → click <strong>Create new</strong>, give it a name.</div></div>
+          <div class="step"><div class="step-num">4</div><div>Click inside the signature text box and press <strong>Ctrl+V</strong> (⌘V on Mac) to paste.</div></div>
+          <div class="step"><div class="step-num">5</div><div>Scroll down and click <strong>Save Changes</strong>.</div></div>
+        </div>
+      </div>
+      <div id="tab-outlook" class="tab-content">
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy Signature"</strong> above.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Open <strong>Outlook</strong> → <strong>File</strong> → <strong>Options</strong> → <strong>Mail</strong> → <strong>Signatures…</strong></div></div>
+          <div class="step"><div class="step-num">3</div><div>Click <strong>New</strong>, name your signature, then click in the edit area.</div></div>
+          <div class="step"><div class="step-num">4</div><div>Press <strong>Ctrl+V</strong> to paste the signature.</div></div>
+          <div class="step"><div class="step-num">5</div><div>Choose default signature for new messages and replies, then click <strong>OK</strong>.</div></div>
+        </div>
+      </div>
+      <div id="tab-apple" class="tab-content">
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy HTML"</strong> above, then paste into a text editor and save as <code>signature.html</code>.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Open <strong>Mail</strong> → <strong>Mail menu</strong> → <strong>Settings</strong> → <strong>Signatures</strong>.</div></div>
+          <div class="step"><div class="step-num">3</div><div>Select your account, click <strong>+</strong> to create a new signature.</div></div>
+          <div class="step"><div class="step-num">4</div><div>Uncheck <strong>"Always match my default message font"</strong>.</div></div>
+          <div class="step"><div class="step-num">5</div><div>Drag your saved <code>signature.html</code> into the signature preview area, or paste using <strong>⌘V</strong> after copying the signature.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const state = {
+  name: '', title: '', company: '', email: '', phone: '',
+  website: '', linkedin: '', twitter: '', github: '',
+  template: 'minimal',
+  accent: '#2563eb',
+  font: 'Arial, Helvetica, sans-serif',
+  size: '14',
+};
+
+// ── Helpers ────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function svgIcon(type, color) {
+  const c = esc(color);
+  const icons = {
+    email: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+    phone: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+    website: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    linkedin: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
+    twitter: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+    github: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+  };
+  return icons[type] || '';
+}
+
+// ── Signature Templates ────────────────────────────────
+function buildMinimal(s) {
+  const font = s.font;
+  const size = parseInt(s.size);
+  const accent = s.accent;
+
+  let contacts = '';
+  if (s.email) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:${accent};text-decoration:none;">${esc(s.email)}</a></span>`;
+  if (s.phone) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;">${esc(s.phone)}</span></span>`;
+  if (s.website) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:${accent};text-decoration:none;">${esc(s.website.replace(/^https?:\/\//,''))}</a></span>`;
+
+  let socials = '';
+  if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('linkedin',accent)}</a>`;
+  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
+  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};font-size:${size}px;color:#374151;line-height:1.5;">
+  <tr><td style="padding-bottom:2px;">
+    <strong style="font-size:${size+2}px;color:#0f172a;">${esc(s.name) || 'Your Name'}</strong>
+  </td></tr>
+  <tr><td style="padding-bottom:8px;color:${accent};font-size:${size-1}px;">
+    ${esc(s.title) || 'Job Title'}${s.company ? ' &nbsp;·&nbsp; ' + esc(s.company) : ''}
+  </td></tr>
+  <tr><td style="padding-bottom:${socials ? '8px' : '0'};">
+    ${contacts || `<span style="color:#94a3b8;">Add contact info in the form</span>`}
+  </td></tr>
+  ${socials ? `<tr><td>${socials}</td></tr>` : ''}
+</table>`;
+}
+
+function buildProfessional(s) {
+  const font = s.font;
+  const size = parseInt(s.size);
+  const accent = s.accent;
+
+  let leftCol = `<strong style="font-size:${size+4}px;color:#0f172a;display:block;letter-spacing:-0.3px;">${esc(s.name) || 'Your Name'}</strong>
+    <span style="color:${accent};font-size:${size}px;display:block;margin-top:2px;">${esc(s.title) || 'Job Title'}</span>
+    ${s.company ? `<span style="color:#6b7280;font-size:${size-1}px;display:block;">${esc(s.company)}</span>` : ''}`;
+
+  let rightItems = '';
+  if (s.email) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.email)}</a></td></tr>`;
+  if (s.phone) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;font-size:${size-1}px;">${esc(s.phone)}</span></td></tr>`;
+  if (s.website) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.website.replace(/^https?:\/\//,''))}</a></td></tr>`;
+
+  let socials = '';
+  if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('linkedin',accent)}</a>`;
+  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
+  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};color:#374151;">
+  <tr>
+    <td style="padding-right:20px;border-right:3px solid ${accent};vertical-align:top;padding-bottom:4px;">
+      ${leftCol}
+      ${socials ? `<div style="margin-top:10px;">${socials}</div>` : ''}
+    </td>
+    <td style="padding-left:20px;vertical-align:top;">
+      <table cellpadding="0" cellspacing="0">
+        ${rightItems || `<tr><td style="color:#94a3b8;font-size:${size-1}px;">Add contact info</td></tr>`}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+function buildModern(s) {
+  const font = s.font;
+  const size = parseInt(s.size);
+  const accent = s.accent;
+
+  let contacts = '';
+  if (s.email) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;">${esc(s.email)}</a></span>`;
+  if (s.phone) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('phone',accent)}&nbsp;${esc(s.phone)}</span>`;
+  if (s.website) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:#374151;text-decoration:none;">${esc(s.website.replace(/^https?:\/\//,''))}</a></span>`;
+
+  let socials = '';
+  if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('linkedin','#ffffff')}</a>`;
+  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter','#ffffff')}</a>`;
+  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github','#ffffff')}</a>`;
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};color:#374151;min-width:320px;">
+  <tr>
+    <td style="background:${accent};padding:14px 18px;border-radius:8px 8px 0 0;">
+      <strong style="font-size:${size+4}px;color:#ffffff;display:block;letter-spacing:-0.3px;">${esc(s.name) || 'Your Name'}</strong>
+      <span style="color:rgba(255,255,255,0.85);font-size:${size-1}px;">${esc(s.title) || 'Job Title'}${s.company ? ' &nbsp;·&nbsp; ' + esc(s.company) : ''}</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="background:#f8fafc;padding:12px 18px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+      <div style="margin-bottom:${socials ? '8px' : '0'};">
+        ${contacts || `<span style="color:#94a3b8;font-size:${size-1}px;">Add contact info in the form</span>`}
+      </div>
+      ${socials ? `<div>${socials}</div>` : ''}
+    </td>
+  </tr>
+</table>`;
+}
+
+function buildSignatureHTML() {
+  switch (state.template) {
+    case 'professional': return buildProfessional(state);
+    case 'modern':       return buildModern(state);
+    default:             return buildMinimal(state);
+  }
+}
+
+// ── Render ─────────────────────────────────────────────
+function render() {
+  $('preview-signature').innerHTML = buildSignatureHTML();
+}
+
+// ── Input bindings ─────────────────────────────────────
+const fieldMap = {
+  'f-name': 'name', 'f-title': 'title', 'f-company': 'company',
+  'f-email': 'email', 'f-phone': 'phone', 'f-website': 'website',
+  'f-linkedin': 'linkedin', 'f-twitter': 'twitter', 'f-github': 'github',
+  'f-font': 'font', 'f-size': 'size',
+};
+Object.entries(fieldMap).forEach(([id, key]) => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener('input', () => { state[key] = el.value; render(); });
+});
+
+// ── Template buttons ───────────────────────────────────
+document.querySelectorAll('.template-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.template = btn.dataset.template;
+    render();
+  });
+});
+
+// ── Color swatches ─────────────────────────────────────
+document.querySelectorAll('.color-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    state.accent = sw.dataset.color;
+    document.documentElement.style.setProperty('--accent', state.accent);
+    $('custom-color').value = state.accent;
+    render();
+  });
+});
+
+$('custom-color').addEventListener('input', e => {
+  state.accent = e.target.value;
+  document.documentElement.style.setProperty('--accent', state.accent);
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  render();
+});
+
+// ── Copy buttons ───────────────────────────────────────
+function showCopied(msg) {
+  const hint = $('copy-hint');
+  const fb = $('copy-feedback');
+  fb.textContent = msg;
+  hint.style.display = 'none';
+  fb.style.display = 'block';
+  setTimeout(() => { hint.style.display = ''; fb.style.display = 'none'; }, 2500);
+}
+
+// Copy rich text (for direct paste into Gmail / Outlook)
+$('btn-copy-sig').addEventListener('click', async () => {
+  const html = buildSignatureHTML();
+  try {
+    const blob = new Blob([html], { type: 'text/html' });
+    const item = new ClipboardItem({ 'text/html': blob });
+    await navigator.clipboard.write([item]);
+    showCopied('Rich-text signature copied! Paste directly into Gmail or Outlook.');
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = html;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopied('HTML copied (rich-text not supported in this browser).');
+  }
+});
+
+// Copy raw HTML
+$('btn-copy-html').addEventListener('click', async () => {
+  const html = buildSignatureHTML();
+  try {
+    await navigator.clipboard.writeText(html);
+    showCopied('HTML source copied to clipboard!');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = html;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopied('HTML source copied!');
+  }
+});
+
+// ── Tabs ───────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Template thumbnail SVGs ────────────────────────────
+function drawThumbnails() {
+  const minimal = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
+    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
+    <rect x="6" y="8" width="22" height="3" rx="1.5" fill="#0f172a"/>
+    <rect x="6" y="14" width="15" height="2" rx="1" fill="#2563eb"/>
+    <rect x="6" y="19" width="30" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="6" y="24" width="20" height="2" rx="1" fill="#cbd5e1"/>
+  </svg>`;
+  const professional = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
+    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
+    <rect x="6" y="6" width="3" height="24" rx="1.5" fill="#2563eb"/>
+    <rect x="13" y="8" width="18" height="3" rx="1.5" fill="#0f172a"/>
+    <rect x="13" y="14" width="12" height="2" rx="1" fill="#2563eb"/>
+    <rect x="13" y="19" width="14" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="33" y="8" width="14" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="33" y="13" width="14" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="33" y="18" width="11" height="2" rx="1" fill="#cbd5e1"/>
+  </svg>`;
+  const modern = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
+    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
+    <rect x="6" y="6" width="40" height="14" rx="3" fill="#2563eb"/>
+    <rect x="10" y="10" width="20" height="3" rx="1.5" fill="white"/>
+    <rect x="10" y="15" width="14" height="2" rx="1" fill="rgba(255,255,255,0.7)"/>
+    <rect x="6" y="22" width="40" height="8" rx="3" fill="#e2e8f0"/>
+    <rect x="10" y="24" width="25" height="2" rx="1" fill="#94a3b8"/>
+    <rect x="10" y="28" width="15" height="2" rx="1" fill="#94a3b8"/>
+  </svg>`;
+
+  $('tmpl-minimal-icon').innerHTML = minimal;
+  $('tmpl-professional-icon').innerHTML = professional;
+  $('tmpl-modern-icon').innerHTML = modern;
+}
+
+// ── Init ───────────────────────────────────────────────
+drawThumbnails();
+render();
+</script>
+</body>
+</html>
