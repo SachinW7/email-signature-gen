@@ -3,54 +3,158 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Email Signature Generator</title>
+  <title>Email Signature Generator — Free & Instant</title>
   <style>
-    /* ── Reset & Base ─────────────────────────────── */
+    /* ── Reset & Tokens ───────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --accent: #2563eb;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #64748b;
-      --radius: 10px;
+      --accent:       #2563eb;
+      --accent-light: #dbeafe;
+      --accent-dark:  #1d4ed8;
+      --bg:           #f1f5f9;
+      --surface:      #ffffff;
+      --surface2:     #f8fafc;
+      --border:       #e2e8f0;
+      --border2:      #cbd5e1;
+      --text:         #0f172a;
+      --text2:        #334155;
+      --muted:        #64748b;
+      --muted2:       #94a3b8;
+      --warn-bg:      #fff7ed;
+      --warn-border:  #fb923c;
+      --warn-text:    #9a3412;
+      --info-bg:      #eff6ff;
+      --info-border:  #93c5fd;
+      --info-text:    #1e40af;
+      --success:      #16a34a;
+      --radius:       10px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:       0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:    0 10px 32px rgba(0,0,0,.1), 0 2px 8px rgba(0,0,0,.05);
+      --transition:   0.18s cubic-bezier(0.4,0,0.2,1);
     }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Mobile Warning Banner ────────────────────── */
+    #mobile-banner {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #mobile-banner.visible { display: flex; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .mobile-banner-card {
+      background: white;
+      border-radius: 18px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+    .mobile-banner-icon {
+      width: 64px; height: 64px;
+      background: #fff7ed;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 20px;
+    }
+    .mobile-banner-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .mobile-banner-card p {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+    .mobile-banner-card p strong { color: var(--text2); }
+    .mobile-banner-dismiss {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .mobile-banner-dismiss:hover { background: var(--accent-dark); }
+    .mobile-banner-note {
+      font-size: 0.75rem;
+      color: var(--muted2);
+      margin-top: 10px;
+      margin-bottom: 0 !important;
     }
 
     /* ── Header ───────────────────────────────────── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 18px 32px;
+      padding: 0 28px;
+      height: 62px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
     }
-    header .logo {
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 8px;
+    .header-left { display: flex; align-items: center; gap: 11px; }
+    .logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+      border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
-      color: white; font-weight: 700; font-size: 18px;
+      color: white; font-weight: 800; font-size: 16px;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.35);
     }
-    header h1 { font-size: 1.2rem; font-weight: 700; }
-    header p  { font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
+    .header-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .header-sub   { font-size: 0.73rem; color: var(--muted); margin-top: 1px; }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #15803d;
+    }
 
     /* ── Layout ───────────────────────────────────── */
     .app {
       display: grid;
       grid-template-columns: 380px 1fr;
-      gap: 0;
-      height: calc(100vh - 69px);
+      height: calc(100vh - 62px);
     }
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       .app { grid-template-columns: 1fr; height: auto; }
     }
 
@@ -59,126 +163,195 @@
       background: var(--surface);
       border-right: 1px solid var(--border);
       overflow-y: auto;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 6px;
     }
+
+    /* Info / disclaimer box */
+    .info-box {
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+    .info-box-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .info-box-header span { font-size: 0.8rem; font-weight: 700; color: var(--info-text); }
+    .info-box p {
+      font-size: 0.775rem;
+      color: #1e40af;
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+    .info-box p:last-child { margin-bottom: 0; }
+    .info-box ul {
+      padding-left: 14px;
+      font-size: 0.775rem;
+      color: #1e40af;
+      line-height: 1.8;
+    }
+
+    /* Sidebar cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 6px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition);
+    }
+    .card:hover { box-shadow: var(--shadow); }
 
     .section-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
       font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
+    .section-label svg { flex-shrink: 0; }
 
-    /* Form fields */
-    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+    /* Fields */
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
     .field:last-child { margin-bottom: 0; }
-    .field label { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+    .field label {
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.01em;
+    }
     .field input {
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 0.875rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 0.86rem;
       color: var(--text);
+      background: var(--surface2);
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
       width: 100%;
     }
-    .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
-    .field input::placeholder { color: #94a3b8; }
+    .field input:focus {
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    .field input::placeholder { color: var(--muted2); }
 
     /* Template selector */
-    .template-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
+    .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
     .template-btn {
       border: 2px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 6px;
+      border-radius: 9px;
+      padding: 10px 6px 8px;
       cursor: pointer;
-      background: var(--bg);
+      background: var(--surface2);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      transition: border-color 0.15s, background 0.15s;
+      transition: border-color var(--transition), background var(--transition), transform var(--transition), box-shadow var(--transition);
     }
-    .template-btn:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, white); }
-    .template-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, white); }
-    .template-btn span { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+    .template-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .template-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+    .template-btn span { font-size: 0.72rem; font-weight: 600; color: var(--muted); }
     .template-btn.active span { color: var(--accent); }
-    .tmpl-icon { width: 52px; height: 36px; border-radius: 4px; overflow: hidden; }
+    .tmpl-icon { width: 54px; height: 38px; border-radius: 4px; overflow: hidden; }
 
     /* Design controls */
-    .design-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .design-control { display: flex; flex-direction: column; gap: 5px; }
-    .design-control label { font-size: 0.8rem; font-weight: 500; }
+    .design-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 12px; }
+    .design-control { display: flex; flex-direction: column; gap: 4px; }
+    .design-control label { font-size: 0.775rem; font-weight: 600; color: var(--text2); }
     .design-control select {
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
       padding: 7px 10px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--text);
-      background: white;
+      background: var(--surface2);
       outline: none;
       cursor: pointer;
+      transition: border-color var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      padding-right: 28px;
     }
     .design-control select:focus { border-color: var(--accent); }
 
-    .color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .color-label { font-size: 0.775rem; font-weight: 600; color: var(--text2); display: block; margin-bottom: 8px; }
+    .color-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
     .color-swatch {
-      width: 28px; height: 28px;
+      width: 26px; height: 26px;
       border-radius: 50%;
       cursor: pointer;
-      border: 3px solid transparent;
-      transition: border-color 0.15s, transform 0.1s;
+      border: 2.5px solid transparent;
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      transition: transform var(--transition), outline-color var(--transition);
       flex-shrink: 0;
     }
-    .color-swatch:hover { transform: scale(1.1); }
-    .color-swatch.active { border-color: #0f172a; }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.active { outline-color: var(--text); }
     .color-custom {
-      width: 28px; height: 28px;
+      position: relative;
+      width: 26px; height: 26px;
       border-radius: 50%;
-      border: 2px solid var(--border);
+      border: 2px dashed var(--border2);
       cursor: pointer;
-      overflow: hidden;
-      padding: 0;
       flex-shrink: 0;
+      overflow: hidden;
+      transition: border-color var(--transition);
     }
+    .color-custom:hover { border-color: var(--accent); }
     .color-custom input[type="color"] {
+      position: absolute;
       width: 48px; height: 48px;
       border: none; padding: 0;
-      margin: -10px 0 0 -10px;
+      top: -11px; left: -11px;
       cursor: pointer;
       opacity: 0;
-      position: absolute;
     }
-    .color-custom { position: relative; }
     .color-custom-icon {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px; pointer-events: none;
+      font-size: 13px; color: var(--muted);
+      pointer-events: none;
+      font-weight: 500;
     }
 
-    /* ── Main / Preview ───────────────────────────── */
+    /* ── Main Panel ───────────────────────────────── */
     .main {
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-height: 0;
     }
 
     .preview-header {
-      padding: 16px 24px;
+      padding: 13px 22px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -186,157 +359,287 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 10px;
+      flex-shrink: 0;
     }
-    .preview-header h2 { font-size: 0.95rem; font-weight: 600; }
+    .preview-header-left { display: flex; align-items: center; gap: 8px; }
+    .preview-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px rgba(22,163,74,0.5);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .preview-header h2 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
 
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 16px;
-      border-radius: 7px;
-      font-size: 0.85rem;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: opacity 0.15s, transform 0.1s;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+      letter-spacing: 0.01em;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--border); }
-    .btn-success { background: #16a34a; color: white; }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 4px 14px rgba(37,99,235,0.4); opacity: 0.95; }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text2);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover { background: var(--surface2); border-color: var(--border2); }
+    .btn-success {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+    }
 
+    /* Preview canvas */
     .preview-canvas {
       flex: 1;
       overflow-y: auto;
-      padding: 32px 24px;
-      background: #e2e8f0;
+      padding: 28px 22px;
+      background: #dde3ed;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(37,99,235,0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%);
     }
 
     .email-mock {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      max-width: 680px;
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      max-width: 660px;
       margin: 0 auto;
       overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .email-mock-titlebar {
+      background: #f1f3f5;
+      border-bottom: 1px solid #dee2e6;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .titlebar-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
     }
     .email-mock-header {
-      padding: 16px 20px;
+      padding: 14px 22px;
       border-bottom: 1px solid var(--border);
-      background: #f8fafc;
+      background: var(--surface2);
     }
-    .email-mock-header p { font-size: 0.78rem; color: var(--muted); margin-bottom: 2px; }
-    .email-mock-header .subject { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .email-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 3px; }
+    .email-subject { font-weight: 700; font-size: 0.95rem; color: var(--text); }
     .email-body {
-      padding: 24px 28px;
-      font-size: 0.9rem;
+      padding: 22px 26px;
+      font-size: 0.88rem;
       color: #374151;
-      line-height: 1.6;
+      line-height: 1.65;
     }
-    .email-body p { margin-bottom: 14px; }
+    .email-body p { margin-bottom: 12px; }
+    .email-body p:last-child { margin-bottom: 0; }
     .email-divider {
       border: none;
       border-top: 1px solid var(--border);
-      margin: 0 28px 20px;
+      margin: 0 26px 18px;
     }
-    .signature-wrapper { padding: 0 28px 28px; }
+    .signature-wrapper {
+      padding: 0 26px 26px;
+      transition: opacity 0.15s;
+    }
+    .signature-wrapper.updating { opacity: 0.6; }
 
-    /* ── Copy section ─────────────────────────────── */
-    .copy-section {
-      padding: 16px 24px;
+    /* Copy bar */
+    .copy-bar {
+      padding: 12px 22px;
       background: var(--surface);
       border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
-    .copy-section p { font-size: 0.8rem; color: var(--muted); flex: 1; min-width: 180px; }
+    .copy-hint { font-size: 0.78rem; color: var(--muted); flex: 1; min-width: 160px; }
+    .copy-feedback {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--success);
+      animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn { from { transform: translateY(4px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .copy-feedback.visible { display: flex; }
 
-    /* ── Instructions ─────────────────────────────── */
+    /* Instructions */
     .instructions {
       background: var(--surface);
       border-top: 1px solid var(--border);
-      padding: 24px;
+      padding: 20px 22px;
+      flex-shrink: 0;
     }
-    .instructions h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+    .instructions-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 13px;
+      color: var(--text);
+    }
+    .tabs { display: flex; gap: 4px; margin-bottom: 13px; }
     .tab-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      font-size: 0.8rem;
-      font-weight: 500;
+      padding: 6px 13px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      font-size: 0.78rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      color: var(--muted);
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
     }
-    .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-    .tab-content { display: none; }
+    .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+    }
+    .tab-content { display: none; animation: fadeIn 0.18s ease; }
     .tab-content.active { display: block; }
-    .steps { display: flex; flex-direction: column; gap: 8px; }
+    .steps { display: flex; flex-direction: column; gap: 7px; }
     .step {
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      font-size: 0.82rem;
-      line-height: 1.5;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text2);
     }
     .step-num {
-      width: 22px; height: 22px;
-      background: var(--accent);
+      width: 21px; height: 21px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
       color: white;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       flex-shrink: 0;
       margin-top: 1px;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.3);
     }
-
-    /* ── Signature Templates ──────────────────────── */
-    /* These styles are injected into the generated HTML so they work in email clients */
+    code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.78rem;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      color: var(--text2);
+    }
   </style>
 </head>
 <body>
 
+<!-- ── Mobile Warning (full-screen overlay) ── -->
+<div id="mobile-banner" role="alertdialog" aria-modal="true" aria-labelledby="mobile-title">
+  <div class="mobile-banner-card">
+    <div class="mobile-banner-icon">&#x26A0;&#xFE0F;</div>
+    <h2 id="mobile-title">Desktop Required for Setup</h2>
+    <p>Email signatures must be configured on a <strong>desktop computer</strong>. Mobile email apps (Gmail app, Outlook app) do not support custom HTML signatures.</p>
+    <p>Please open this page on your <strong>Mac or Windows PC</strong> to build and install your signature in Gmail, Outlook, or Apple Mail.</p>
+    <p class="mobile-banner-note">You can still browse and preview — but copy &amp; paste into an email client requires desktop.</p>
+    <button class="mobile-banner-dismiss" id="mobile-dismiss">I understand — continue anyway</button>
+  </div>
+</div>
+
+<!-- ── Header ── -->
 <header>
-  <div class="logo">S</div>
-  <div>
-    <h1>Email Signature Generator</h1>
-    <p>Build a professional signature in seconds</p>
+  <div class="header-left">
+    <div class="logo">S</div>
+    <div>
+      <div class="header-title">Email Signature Generator</div>
+      <div class="header-sub">Build a professional signature in seconds — free</div>
+    </div>
+  </div>
+  <div class="header-badge">
+    <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+    No account needed
   </div>
 </header>
 
 <div class="app">
-  <!-- ── Sidebar ── -->
+
+  <!-- ══ Sidebar ══ -->
   <aside class="sidebar">
 
+    <!-- Desktop disclaimer -->
+    <div class="info-box">
+      <div class="info-box-header">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>Desktop-only setup</span>
+      </div>
+      <p>This tool works in any desktop browser. To install your signature you will need access to:</p>
+      <ul>
+        <li><strong>Gmail</strong> — gmail.com in Chrome / Firefox / Safari</li>
+        <li><strong>Outlook</strong> — Desktop app or outlook.com</li>
+        <li><strong>Apple Mail</strong> — Mac only</li>
+      </ul>
+      <p style="margin-top:6px;">Mobile email apps do not support HTML signature setup.</p>
+    </div>
+
     <!-- Contact Info -->
-    <section>
-      <p class="section-label">Contact Information</p>
+    <div class="card">
+      <p class="section-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Contact Information
+      </p>
       <div class="field"><label>Full Name</label><input id="f-name" type="text" placeholder="Jane Smith" /></div>
       <div class="field"><label>Job Title</label><input id="f-title" type="text" placeholder="Senior Product Designer" /></div>
       <div class="field"><label>Company</label><input id="f-company" type="text" placeholder="Acme Corp" /></div>
       <div class="field"><label>Email Address</label><input id="f-email" type="email" placeholder="jane@acme.com" /></div>
       <div class="field"><label>Phone Number</label><input id="f-phone" type="text" placeholder="+1 (555) 000-1234" /></div>
       <div class="field"><label>Website</label><input id="f-website" type="text" placeholder="https://acme.com" /></div>
-    </section>
+    </div>
 
     <!-- Social Links -->
-    <section>
-      <p class="section-label">Social Links</p>
+    <div class="card">
+      <p class="section-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Social Links
+      </p>
       <div class="field"><label>LinkedIn URL</label><input id="f-linkedin" type="text" placeholder="https://linkedin.com/in/janesmith" /></div>
       <div class="field"><label>Twitter / X URL</label><input id="f-twitter" type="text" placeholder="https://twitter.com/janesmith" /></div>
       <div class="field"><label>GitHub URL</label><input id="f-github" type="text" placeholder="https://github.com/janesmith" /></div>
-    </section>
+    </div>
 
     <!-- Template -->
-    <section>
-      <p class="section-label">Template</p>
+    <div class="card">
+      <p class="section-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Template
+      </p>
       <div class="template-grid">
         <button class="template-btn active" data-template="minimal">
           <div class="tmpl-icon" id="tmpl-minimal-icon"></div>
@@ -351,12 +654,15 @@
           <span>Modern</span>
         </button>
       </div>
-    </section>
+    </div>
 
     <!-- Design -->
-    <section>
-      <p class="section-label">Design</p>
-      <div class="design-row" style="margin-bottom: 12px;">
+    <div class="card">
+      <p class="section-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        Design
+      </p>
+      <div class="design-row">
         <div class="design-control">
           <label>Font</label>
           <select id="f-font">
@@ -368,42 +674,45 @@
         <div class="design-control">
           <label>Size</label>
           <select id="f-size">
-            <option value="13">Small</option>
-            <option value="14" selected>Medium</option>
-            <option value="15">Large</option>
+            <option value="13">Small (13px)</option>
+            <option value="14" selected>Medium (14px)</option>
+            <option value="15">Large (15px)</option>
           </select>
         </div>
       </div>
-      <label style="font-size:0.8rem; font-weight:500; display:block; margin-bottom:6px;">Accent Color</label>
+      <span class="color-label">Accent Color</span>
       <div class="color-row" id="color-swatches">
-        <div class="color-swatch active" data-color="#2563eb" style="background:#2563eb;" title="Blue"></div>
-        <div class="color-swatch" data-color="#7c3aed" style="background:#7c3aed;" title="Purple"></div>
-        <div class="color-swatch" data-color="#059669" style="background:#059669;" title="Green"></div>
-        <div class="color-swatch" data-color="#dc2626" style="background:#dc2626;" title="Red"></div>
-        <div class="color-swatch" data-color="#d97706" style="background:#d97706;" title="Amber"></div>
-        <div class="color-swatch" data-color="#0891b2" style="background:#0891b2;" title="Cyan"></div>
-        <div class="color-swatch" data-color="#374151" style="background:#374151;" title="Dark"></div>
+        <div class="color-swatch active" data-color="#2563eb" style="background:#2563eb" title="Blue"></div>
+        <div class="color-swatch" data-color="#7c3aed" style="background:#7c3aed" title="Purple"></div>
+        <div class="color-swatch" data-color="#0891b2" style="background:#0891b2" title="Cyan"></div>
+        <div class="color-swatch" data-color="#059669" style="background:#059669" title="Green"></div>
+        <div class="color-swatch" data-color="#dc2626" style="background:#dc2626" title="Red"></div>
+        <div class="color-swatch" data-color="#d97706" style="background:#d97706" title="Amber"></div>
+        <div class="color-swatch" data-color="#374151" style="background:#374151" title="Dark"></div>
         <div class="color-custom" title="Custom color">
           <div class="color-custom-icon">+</div>
           <input type="color" id="custom-color" value="#2563eb" />
         </div>
       </div>
-    </section>
+    </div>
 
   </aside>
 
-  <!-- ── Main ── -->
+  <!-- ══ Main ══ -->
   <div class="main">
 
     <div class="preview-header">
-      <h2>Live Preview</h2>
-      <div style="display:flex;gap:8px;">
+      <div class="preview-header-left">
+        <div class="preview-dot"></div>
+        <h2>Live Preview</h2>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
         <button class="btn btn-secondary" id="btn-copy-html">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Copy HTML
         </button>
         <button class="btn btn-primary" id="btn-copy-sig">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
           Copy Signature
         </button>
       </div>
@@ -411,30 +720,42 @@
 
     <div class="preview-canvas">
       <div class="email-mock">
+        <!-- macOS-style titlebar dots -->
+        <div class="email-mock-titlebar">
+          <div class="titlebar-dot" style="background:#ff5f57"></div>
+          <div class="titlebar-dot" style="background:#febc2e"></div>
+          <div class="titlebar-dot" style="background:#28c840"></div>
+        </div>
         <div class="email-mock-header">
-          <p>From: Jane Smith &lt;jane@acme.com&gt; &nbsp;·&nbsp; To: team@company.com</p>
-          <div class="subject">Re: Project Update — Q2 Roadmap</div>
+          <div class="email-meta">From: Jane Smith &lt;jane@acme.com&gt; &nbsp;&middot;&nbsp; To: team@company.com</div>
+          <div class="email-subject">Re: Project Update &mdash; Q2 Roadmap</div>
         </div>
         <div class="email-body">
           <p>Hi everyone,</p>
-          <p>Thanks for joining the call earlier. I've attached the updated roadmap for your review. Let me know if you have any questions before the deadline.</p>
-          <p>Best,</p>
+          <p>Thanks for joining the call earlier. I've attached the updated roadmap for your review. Let me know if you have any questions before Friday's deadline.</p>
+          <p>Best regards,</p>
         </div>
         <hr class="email-divider" />
         <div class="signature-wrapper" id="preview-signature">
-          <!-- Rendered live here -->
+          <!-- Rendered live -->
         </div>
       </div>
     </div>
 
-    <div class="copy-section">
-      <p id="copy-hint">Click "Copy Signature" to copy the rich-text signature, or "Copy HTML" for the raw HTML code.</p>
-      <div id="copy-feedback" style="display:none;color:#16a34a;font-size:0.82rem;font-weight:600;">Copied to clipboard!</div>
+    <div class="copy-bar">
+      <span class="copy-hint" id="copy-hint">Click <strong>Copy Signature</strong> to paste directly into Gmail or Outlook, or <strong>Copy HTML</strong> for the raw code.</span>
+      <div class="copy-feedback" id="copy-feedback">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="copy-feedback-text">Copied!</span>
+      </div>
     </div>
 
     <!-- Instructions -->
     <div class="instructions">
-      <h3>How to Add Your Signature</h3>
+      <div class="instructions-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+        How to Add Your Signature
+      </div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="gmail">Gmail</button>
         <button class="tab-btn" data-tab="outlook">Outlook</button>
@@ -442,29 +763,29 @@
       </div>
       <div id="tab-gmail" class="tab-content active">
         <div class="steps">
-          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy Signature"</strong> above.</div></div>
-          <div class="step"><div class="step-num">2</div><div>Open <strong>Gmail</strong> → Settings gear → <strong>See all settings</strong>.</div></div>
-          <div class="step"><div class="step-num">3</div><div>Scroll to <strong>Signature</strong> → click <strong>Create new</strong>, give it a name.</div></div>
-          <div class="step"><div class="step-num">4</div><div>Click inside the signature text box and press <strong>Ctrl+V</strong> (⌘V on Mac) to paste.</div></div>
+          <div class="step"><div class="step-num">1</div><div>Click <strong>Copy Signature</strong> above.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Go to <strong>gmail.com</strong> &rarr; Settings gear &rarr; <strong>See all settings</strong>.</div></div>
+          <div class="step"><div class="step-num">3</div><div>Scroll to <strong>Signature</strong> &rarr; click <strong>Create new</strong>, give it a name.</div></div>
+          <div class="step"><div class="step-num">4</div><div>Click inside the signature editor and press <strong>Ctrl+V</strong> (or <strong>&#8984;V</strong> on Mac) to paste.</div></div>
           <div class="step"><div class="step-num">5</div><div>Scroll down and click <strong>Save Changes</strong>.</div></div>
         </div>
       </div>
       <div id="tab-outlook" class="tab-content">
         <div class="steps">
-          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy Signature"</strong> above.</div></div>
-          <div class="step"><div class="step-num">2</div><div>Open <strong>Outlook</strong> → <strong>File</strong> → <strong>Options</strong> → <strong>Mail</strong> → <strong>Signatures…</strong></div></div>
-          <div class="step"><div class="step-num">3</div><div>Click <strong>New</strong>, name your signature, then click in the edit area.</div></div>
-          <div class="step"><div class="step-num">4</div><div>Press <strong>Ctrl+V</strong> to paste the signature.</div></div>
-          <div class="step"><div class="step-num">5</div><div>Choose default signature for new messages and replies, then click <strong>OK</strong>.</div></div>
+          <div class="step"><div class="step-num">1</div><div>Click <strong>Copy Signature</strong> above.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Open <strong>Outlook</strong> &rarr; <strong>File</strong> &rarr; <strong>Options</strong> &rarr; <strong>Mail</strong> &rarr; <strong>Signatures&hellip;</strong></div></div>
+          <div class="step"><div class="step-num">3</div><div>Click <strong>New</strong>, name your signature, click into the edit area.</div></div>
+          <div class="step"><div class="step-num">4</div><div>Press <strong>Ctrl+V</strong> to paste the rich-text signature.</div></div>
+          <div class="step"><div class="step-num">5</div><div>Assign as default for new messages and/or replies, then click <strong>OK</strong>.</div></div>
         </div>
       </div>
       <div id="tab-apple" class="tab-content">
         <div class="steps">
-          <div class="step"><div class="step-num">1</div><div>Click <strong>"Copy HTML"</strong> above, then paste into a text editor and save as <code>signature.html</code>.</div></div>
-          <div class="step"><div class="step-num">2</div><div>Open <strong>Mail</strong> → <strong>Mail menu</strong> → <strong>Settings</strong> → <strong>Signatures</strong>.</div></div>
-          <div class="step"><div class="step-num">3</div><div>Select your account, click <strong>+</strong> to create a new signature.</div></div>
+          <div class="step"><div class="step-num">1</div><div>Click <strong>Copy HTML</strong> above, paste into a text editor, save as <code>signature.html</code>.</div></div>
+          <div class="step"><div class="step-num">2</div><div>Open <strong>Mail</strong> &rarr; <strong>Mail menu</strong> &rarr; <strong>Settings</strong> &rarr; <strong>Signatures</strong> tab.</div></div>
+          <div class="step"><div class="step-num">3</div><div>Select your account on the left, click <strong>+</strong> to create a new signature.</div></div>
           <div class="step"><div class="step-num">4</div><div>Uncheck <strong>"Always match my default message font"</strong>.</div></div>
-          <div class="step"><div class="step-num">5</div><div>Drag your saved <code>signature.html</code> into the signature preview area, or paste using <strong>⌘V</strong> after copying the signature.</div></div>
+          <div class="step"><div class="step-num">5</div><div>Open your <code>signature.html</code> in a browser, select all (<strong>&#8984;A</strong>), copy, then paste into the Mail signature editor.</div></div>
         </div>
       </div>
     </div>
@@ -483,85 +804,98 @@ const state = {
   size: '14',
 };
 
-// ── Helpers ────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
+// ── Mobile detection ───────────────────────────────────
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 900);
+}
+if (isMobile()) {
+  $('mobile-banner').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+$('mobile-dismiss').addEventListener('click', () => {
+  $('mobile-banner').classList.remove('visible');
+  document.body.style.overflow = '';
+});
+
+// ── Escape HTML ────────────────────────────────────────
 function esc(str) {
   if (!str) return '';
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── SVG Icons (inlined for email clients) ──────────────
 function svgIcon(type, color) {
   const c = esc(color);
   const icons = {
-    email: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
-    phone: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
-    website: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    email:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+    phone:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+    website:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
     linkedin: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
-    twitter: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-    github: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+    twitter:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+    github:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${c}"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
   };
   return icons[type] || '';
 }
 
-// ── Signature Templates ────────────────────────────────
+// ── Template Builders ──────────────────────────────────
 function buildMinimal(s) {
-  const font = s.font;
+  const { font, accent } = s;
   const size = parseInt(s.size);
-  const accent = s.accent;
 
   let contacts = '';
-  if (s.email) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:${accent};text-decoration:none;">${esc(s.email)}</a></span>`;
-  if (s.phone) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;">${esc(s.phone)}</span></span>`;
+  if (s.email)   contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:${accent};text-decoration:none;">${esc(s.email)}</a></span>`;
+  if (s.phone)   contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;">${esc(s.phone)}</span></span>`;
   if (s.website) contacts += `<span style="margin-right:16px;white-space:nowrap;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:${accent};text-decoration:none;">${esc(s.website.replace(/^https?:\/\//,''))}</a></span>`;
 
   let socials = '';
   if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('linkedin',accent)}</a>`;
-  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
-  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
+  if (s.twitter)  socials += `<a href="${esc(s.twitter)}"  style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
+  if (s.github)   socials += `<a href="${esc(s.github)}"   style="display:inline-block;margin-right:8px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};font-size:${size}px;color:#374151;line-height:1.5;">
-  <tr><td style="padding-bottom:2px;">
-    <strong style="font-size:${size+2}px;color:#0f172a;">${esc(s.name) || 'Your Name'}</strong>
+  <tr><td style="padding-bottom:3px;">
+    <strong style="font-size:${size+3}px;color:#0f172a;letter-spacing:-0.3px;">${esc(s.name)||'Your Name'}</strong>
   </td></tr>
-  <tr><td style="padding-bottom:8px;color:${accent};font-size:${size-1}px;">
-    ${esc(s.title) || 'Job Title'}${s.company ? ' &nbsp;·&nbsp; ' + esc(s.company) : ''}
+  <tr><td style="padding-bottom:9px;color:${accent};font-size:${size-1}px;">
+    ${esc(s.title)||'Job Title'}${s.company?' &nbsp;&middot;&nbsp; '+esc(s.company):''}
   </td></tr>
-  <tr><td style="padding-bottom:${socials ? '8px' : '0'};">
-    ${contacts || `<span style="color:#94a3b8;">Add contact info in the form</span>`}
+  <tr><td style="padding-bottom:${socials?'9px':'0'};">
+    ${contacts||`<span style="color:#94a3b8;">Add contact details in the form</span>`}
   </td></tr>
-  ${socials ? `<tr><td>${socials}</td></tr>` : ''}
+  ${socials?`<tr><td>${socials}</td></tr>`:''}
 </table>`;
 }
 
 function buildProfessional(s) {
-  const font = s.font;
+  const { font, accent } = s;
   const size = parseInt(s.size);
-  const accent = s.accent;
 
-  let leftCol = `<strong style="font-size:${size+4}px;color:#0f172a;display:block;letter-spacing:-0.3px;">${esc(s.name) || 'Your Name'}</strong>
-    <span style="color:${accent};font-size:${size}px;display:block;margin-top:2px;">${esc(s.title) || 'Job Title'}</span>
-    ${s.company ? `<span style="color:#6b7280;font-size:${size-1}px;display:block;">${esc(s.company)}</span>` : ''}`;
+  const leftCol = `<strong style="font-size:${size+5}px;color:#0f172a;display:block;letter-spacing:-0.5px;line-height:1.2;">${esc(s.name)||'Your Name'}</strong>
+    <span style="color:${accent};font-size:${size}px;display:block;margin-top:3px;font-weight:600;">${esc(s.title)||'Job Title'}</span>
+    ${s.company?`<span style="color:#6b7280;font-size:${size-1}px;display:block;margin-top:1px;">${esc(s.company)}</span>`:''}`;
 
   let rightItems = '';
-  if (s.email) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.email)}</a></td></tr>`;
-  if (s.phone) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;font-size:${size-1}px;">${esc(s.phone)}</span></td></tr>`;
-  if (s.website) rightItems += `<tr><td style="padding-bottom:3px;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.website.replace(/^https?:\/\//,''))}</a></td></tr>`;
+  if (s.email)   rightItems += `<tr><td style="padding-bottom:4px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.email)}</a></td></tr>`;
+  if (s.phone)   rightItems += `<tr><td style="padding-bottom:4px;">${svgIcon('phone',accent)}&nbsp;<span style="color:#374151;font-size:${size-1}px;">${esc(s.phone)}</span></td></tr>`;
+  if (s.website) rightItems += `<tr><td style="padding-bottom:4px;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:#374151;text-decoration:none;font-size:${size-1}px;">${esc(s.website.replace(/^https?:\/\//,''))}</a></td></tr>`;
 
   let socials = '';
   if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('linkedin',accent)}</a>`;
-  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
-  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
+  if (s.twitter)  socials += `<a href="${esc(s.twitter)}"  style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter',accent)}</a>`;
+  if (s.github)   socials += `<a href="${esc(s.github)}"   style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github',accent)}</a>`;
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};color:#374151;">
   <tr>
-    <td style="padding-right:20px;border-right:3px solid ${accent};vertical-align:top;padding-bottom:4px;">
+    <td style="padding-right:22px;border-right:3px solid ${accent};vertical-align:top;padding-bottom:4px;">
       ${leftCol}
-      ${socials ? `<div style="margin-top:10px;">${socials}</div>` : ''}
+      ${socials?`<div style="margin-top:12px;">${socials}</div>`:''}
     </td>
-    <td style="padding-left:20px;vertical-align:top;">
+    <td style="padding-left:22px;vertical-align:top;">
       <table cellpadding="0" cellspacing="0">
-        ${rightItems || `<tr><td style="color:#94a3b8;font-size:${size-1}px;">Add contact info</td></tr>`}
+        ${rightItems||`<tr><td style="color:#94a3b8;font-size:${size-1}px;">Add contact info</td></tr>`}
       </table>
     </td>
   </tr>
@@ -569,33 +903,30 @@ function buildProfessional(s) {
 }
 
 function buildModern(s) {
-  const font = s.font;
+  const { font, accent } = s;
   const size = parseInt(s.size);
-  const accent = s.accent;
 
   let contacts = '';
-  if (s.email) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;">${esc(s.email)}</a></span>`;
-  if (s.phone) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('phone',accent)}&nbsp;${esc(s.phone)}</span>`;
+  if (s.email)   contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('email',accent)}&nbsp;<a href="mailto:${esc(s.email)}" style="color:#374151;text-decoration:none;">${esc(s.email)}</a></span>`;
+  if (s.phone)   contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('phone',accent)}&nbsp;${esc(s.phone)}</span>`;
   if (s.website) contacts += `<span style="margin-right:14px;white-space:nowrap;font-size:${size-1}px;">${svgIcon('website',accent)}&nbsp;<a href="${esc(s.website)}" style="color:#374151;text-decoration:none;">${esc(s.website.replace(/^https?:\/\//,''))}</a></span>`;
 
   let socials = '';
   if (s.linkedin) socials += `<a href="${esc(s.linkedin)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('linkedin','#ffffff')}</a>`;
-  if (s.twitter) socials += `<a href="${esc(s.twitter)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter','#ffffff')}</a>`;
-  if (s.github) socials += `<a href="${esc(s.github)}" style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github','#ffffff')}</a>`;
+  if (s.twitter)  socials += `<a href="${esc(s.twitter)}"  style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('twitter','#ffffff')}</a>`;
+  if (s.github)   socials += `<a href="${esc(s.github)}"   style="display:inline-block;margin-right:6px;text-decoration:none;">${svgIcon('github','#ffffff')}</a>`;
 
-  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};color:#374151;min-width:320px;">
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${font};color:#374151;min-width:300px;">
   <tr>
-    <td style="background:${accent};padding:14px 18px;border-radius:8px 8px 0 0;">
-      <strong style="font-size:${size+4}px;color:#ffffff;display:block;letter-spacing:-0.3px;">${esc(s.name) || 'Your Name'}</strong>
-      <span style="color:rgba(255,255,255,0.85);font-size:${size-1}px;">${esc(s.title) || 'Job Title'}${s.company ? ' &nbsp;·&nbsp; ' + esc(s.company) : ''}</span>
+    <td style="background:${accent};padding:16px 20px;border-radius:8px 8px 0 0;">
+      <strong style="font-size:${size+5}px;color:#ffffff;display:block;letter-spacing:-0.5px;line-height:1.2;">${esc(s.name)||'Your Name'}</strong>
+      <span style="color:rgba(255,255,255,0.85);font-size:${size-1}px;display:block;margin-top:3px;">${esc(s.title)||'Job Title'}${s.company?' &nbsp;&middot;&nbsp; '+esc(s.company):''}</span>
+      ${socials?`<div style="margin-top:12px;">${socials}</div>`:''}
     </td>
   </tr>
   <tr>
-    <td style="background:#f8fafc;padding:12px 18px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
-      <div style="margin-bottom:${socials ? '8px' : '0'};">
-        ${contacts || `<span style="color:#94a3b8;font-size:${size-1}px;">Add contact info in the form</span>`}
-      </div>
-      ${socials ? `<div>${socials}</div>` : ''}
+    <td style="background:#f8fafc;padding:13px 20px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">
+      ${contacts||`<span style="color:#94a3b8;font-size:${size-1}px;">Add contact info in the form</span>`}
     </td>
   </tr>
 </table>`;
@@ -609,17 +940,24 @@ function buildSignatureHTML() {
   }
 }
 
-// ── Render ─────────────────────────────────────────────
+// ── Render with flash effect ───────────────────────────
+let renderTimer;
 function render() {
-  $('preview-signature').innerHTML = buildSignatureHTML();
+  const wrapper = $('preview-signature');
+  wrapper.classList.add('updating');
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => {
+    wrapper.innerHTML = buildSignatureHTML();
+    wrapper.classList.remove('updating');
+  }, 60);
 }
 
-// ── Input bindings ─────────────────────────────────────
+// ── Field bindings ─────────────────────────────────────
 const fieldMap = {
-  'f-name': 'name', 'f-title': 'title', 'f-company': 'company',
-  'f-email': 'email', 'f-phone': 'phone', 'f-website': 'website',
-  'f-linkedin': 'linkedin', 'f-twitter': 'twitter', 'f-github': 'github',
-  'f-font': 'font', 'f-size': 'size',
+  'f-name':'name','f-title':'title','f-company':'company',
+  'f-email':'email','f-phone':'phone','f-website':'website',
+  'f-linkedin':'linkedin','f-twitter':'twitter','f-github':'github',
+  'f-font':'font','f-size':'size',
 };
 Object.entries(fieldMap).forEach(([id, key]) => {
   const el = $(id);
@@ -648,7 +986,6 @@ document.querySelectorAll('.color-swatch').forEach(sw => {
     render();
   });
 });
-
 $('custom-color').addEventListener('input', e => {
   state.accent = e.target.value;
   document.documentElement.style.setProperty('--accent', state.accent);
@@ -656,50 +993,44 @@ $('custom-color').addEventListener('input', e => {
   render();
 });
 
-// ── Copy buttons ───────────────────────────────────────
+// ── Copy helpers ───────────────────────────────────────
 function showCopied(msg) {
-  const hint = $('copy-hint');
-  const fb = $('copy-feedback');
-  fb.textContent = msg;
-  hint.style.display = 'none';
-  fb.style.display = 'block';
-  setTimeout(() => { hint.style.display = ''; fb.style.display = 'none'; }, 2500);
+  $('copy-feedback-text').textContent = msg;
+  $('copy-hint').style.display = 'none';
+  $('copy-feedback').classList.add('visible');
+  setTimeout(() => {
+    $('copy-hint').style.display = '';
+    $('copy-feedback').classList.remove('visible');
+  }, 3000);
 }
 
-// Copy rich text (for direct paste into Gmail / Outlook)
 $('btn-copy-sig').addEventListener('click', async () => {
   const html = buildSignatureHTML();
   try {
     const blob = new Blob([html], { type: 'text/html' });
-    const item = new ClipboardItem({ 'text/html': blob });
-    await navigator.clipboard.write([item]);
-    showCopied('Rich-text signature copied! Paste directly into Gmail or Outlook.');
+    await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]);
+    showCopied('Rich-text copied — paste into Gmail or Outlook');
   } catch {
-    // fallback
-    const ta = document.createElement('textarea');
-    ta.value = html;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showCopied('HTML copied (rich-text not supported in this browser).');
+    try {
+      await navigator.clipboard.writeText(html);
+      showCopied('HTML copied (use Paste Special in your email client)');
+    } catch {
+      const ta = Object.assign(document.createElement('textarea'), { value: html });
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+      showCopied('Copied!');
+    }
   }
 });
 
-// Copy raw HTML
 $('btn-copy-html').addEventListener('click', async () => {
   const html = buildSignatureHTML();
   try {
     await navigator.clipboard.writeText(html);
-    showCopied('HTML source copied to clipboard!');
+    showCopied('HTML source copied to clipboard');
   } catch {
-    const ta = document.createElement('textarea');
-    ta.value = html;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showCopied('HTML source copied!');
+    const ta = Object.assign(document.createElement('textarea'), { value: html });
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    showCopied('HTML source copied');
   }
 });
 
@@ -713,38 +1044,41 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// ── Template thumbnail SVGs ────────────────────────────
+// ── Template thumbnails ────────────────────────────────
 function drawThumbnails() {
-  const minimal = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
-    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
-    <rect x="6" y="8" width="22" height="3" rx="1.5" fill="#0f172a"/>
-    <rect x="6" y="14" width="15" height="2" rx="1" fill="#2563eb"/>
-    <rect x="6" y="19" width="30" height="2" rx="1" fill="#cbd5e1"/>
-    <rect x="6" y="24" width="20" height="2" rx="1" fill="#cbd5e1"/>
-  </svg>`;
-  const professional = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
-    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
-    <rect x="6" y="6" width="3" height="24" rx="1.5" fill="#2563eb"/>
-    <rect x="13" y="8" width="18" height="3" rx="1.5" fill="#0f172a"/>
-    <rect x="13" y="14" width="12" height="2" rx="1" fill="#2563eb"/>
-    <rect x="13" y="19" width="14" height="2" rx="1" fill="#cbd5e1"/>
-    <rect x="33" y="8" width="14" height="2" rx="1" fill="#cbd5e1"/>
-    <rect x="33" y="13" width="14" height="2" rx="1" fill="#cbd5e1"/>
-    <rect x="33" y="18" width="11" height="2" rx="1" fill="#cbd5e1"/>
-  </svg>`;
-  const modern = `<svg width="52" height="36" xmlns="http://www.w3.org/2000/svg">
-    <rect width="52" height="36" rx="3" fill="#f8fafc"/>
-    <rect x="6" y="6" width="40" height="14" rx="3" fill="#2563eb"/>
-    <rect x="10" y="10" width="20" height="3" rx="1.5" fill="white"/>
-    <rect x="10" y="15" width="14" height="2" rx="1" fill="rgba(255,255,255,0.7)"/>
-    <rect x="6" y="22" width="40" height="8" rx="3" fill="#e2e8f0"/>
-    <rect x="10" y="24" width="25" height="2" rx="1" fill="#94a3b8"/>
-    <rect x="10" y="28" width="15" height="2" rx="1" fill="#94a3b8"/>
+  $('tmpl-minimal-icon').innerHTML = `<svg width="54" height="38" xmlns="http://www.w3.org/2000/svg">
+    <rect width="54" height="38" rx="3" fill="#f1f5f9"/>
+    <rect x="6" y="9" width="24" height="3.5" rx="1.75" fill="#0f172a"/>
+    <rect x="6" y="15" width="16" height="2" rx="1" fill="#2563eb"/>
+    <rect x="6" y="20" width="34" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="6" y="25" width="24" height="2" rx="1" fill="#cbd5e1"/>
+    <circle cx="8" cy="32" r="2.5" fill="#2563eb"/>
+    <circle cx="14" cy="32" r="2.5" fill="#2563eb" opacity=".5"/>
+    <circle cx="20" cy="32" r="2.5" fill="#2563eb" opacity=".3"/>
   </svg>`;
 
-  $('tmpl-minimal-icon').innerHTML = minimal;
-  $('tmpl-professional-icon').innerHTML = professional;
-  $('tmpl-modern-icon').innerHTML = modern;
+  $('tmpl-professional-icon').innerHTML = `<svg width="54" height="38" xmlns="http://www.w3.org/2000/svg">
+    <rect width="54" height="38" rx="3" fill="#f1f5f9"/>
+    <rect x="5" y="7" width="3" height="24" rx="1.5" fill="#2563eb"/>
+    <rect x="12" y="9" width="19" height="3.5" rx="1.75" fill="#0f172a"/>
+    <rect x="12" y="15" width="13" height="2" rx="1" fill="#2563eb"/>
+    <rect x="12" y="19" width="10" height="1.5" rx=".75" fill="#94a3b8"/>
+    <rect x="12" y="24" width="16" height="1.5" rx=".75" fill="#e2e8f0"/>
+    <rect x="34" y="9" width="15" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="34" y="14" width="15" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="34" y="19" width="12" height="2" rx="1" fill="#cbd5e1"/>
+    <rect x="34" y="24" width="10" height="2" rx="1" fill="#cbd5e1"/>
+  </svg>`;
+
+  $('tmpl-modern-icon').innerHTML = `<svg width="54" height="38" xmlns="http://www.w3.org/2000/svg">
+    <rect width="54" height="38" rx="3" fill="#f1f5f9"/>
+    <rect x="5" y="5" width="44" height="17" rx="4" fill="#2563eb"/>
+    <rect x="10" y="9" width="22" height="3.5" rx="1.75" fill="white"/>
+    <rect x="10" y="15" width="15" height="2" rx="1" fill="rgba(255,255,255,0.7)"/>
+    <rect x="5" y="24" width="44" height="10" rx="4" fill="#e2e8f0"/>
+    <rect x="10" y="27" width="28" height="1.5" rx=".75" fill="#94a3b8"/>
+    <rect x="10" y="30" width="20" height="1.5" rx=".75" fill="#94a3b8"/>
+  </svg>`;
 }
 
 // ── Init ───────────────────────────────────────────────
